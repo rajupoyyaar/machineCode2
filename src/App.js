@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./App.css";
 
 function App() {
@@ -10,51 +10,48 @@ function App() {
   const [newAppName, setNewAppName] = useState("");
   const [newDocName, setNewDocName] = useState("");
 
-  // Automatically set the first document of the first application as selected
-  // useEffect(() => {
-  //   if (applications.length > 0 && currentAppId === null) {
-  //     const firstApp = applications[0];
-  //     setCurrentAppId(firstApp.id);
-  //     if (firstApp.documents.length > 0) {
-  //       setCurrentDocId(firstApp.documents[0].id);
-  //     }
-  //   }
-  // }, [applications]);
-
   const addApplication = () => {
     const newAppId = applications.length + 1;
-    setApplications([
-      ...applications,
-      { id: newAppId, name: newAppName, documents: [] },
-    ]);
+    const newApp = {
+      id: newAppId,
+      name: newAppName,
+      documents: [],
+    };
+
+    setApplications([...applications, newApp]);
     setNewAppName("");
     setIsAppPopupOpen(false);
-    if (!currentAppId) {
-      setCurrentAppId(newAppId);
-    }
+    setCurrentAppId(newAppId);
+    setCurrentDocId(null); 
   };
 
   const addDocument = () => {
-    setApplications(
-      applications.map((app) =>
-        app.id === currentAppId
-          ? {
-              ...app,
-              documents: [
-                ...app.documents,
-                { id: app.documents.length + 1, name: newDocName },
-              ],
-            }
-          : app
-      )
+    const updatedApplications = applications.map((app) =>
+      app.id === currentAppId
+        ? {
+            ...app,
+            documents: [
+              ...app.documents,
+              { id: app.documents.length + 1, name: newDocName },
+            ],
+          }
+        : app
     );
+
+    setApplications(updatedApplications);
     setNewDocName("");
     setIsDocPopupOpen(false);
+
+    const currentApp = updatedApplications.find((app) => app.id === currentAppId);
+    if (currentApp.documents.length === 1) {
+      setCurrentDocId(currentApp.documents[0].id);
+    }
   };
 
   const deleteApplication = (id) => {
     const updatedApps = applications.filter((app) => app.id !== id);
     setApplications(updatedApps);
+
     if (currentAppId === id) {
       if (updatedApps.length > 0) {
         setCurrentAppId(updatedApps[0].id);
@@ -81,6 +78,7 @@ function App() {
           : app
       )
     );
+
     if (currentDocId === docId) {
       const currentApp = applications.find((app) => app.id === currentAppId);
       if (currentApp.documents.length > 1) {
